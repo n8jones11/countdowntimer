@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentation Countdown Timer</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons (menu icon) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Poppins Font Import -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif; /* Applied Poppins font */
+            /* Updated linear gradient background */
+            background: #D493FC;
+            background: linear-gradient(45deg, rgba(212, 147, 252, 1) 0%, rgba(66, 176, 253, 1) 11%, rgba(13, 75, 185, 1) 66%, rgba(2, 30, 90, 1) 100%);
+            color: #e2e8f0; /* Default light text */
+            overflow: hidden; /* Prevent scrolling */
+
+            /* Subtle background animation */
+            background-size: 200% 200%; /* Make background larger than viewport */
+            animation: gradientMovement 15s ease infinite alternate; /* Apply animation */
+        }
+
+        /* Keyframes for subtle gradient movement */
+        @keyframes gradientMovement {
+            0% {
+                background-position: 0% 50%;
+            }
+            100% {
+                background-position: 100% 50%;
+            }
+        }
+
+        /* Headings: Poppins 500 */
+        h1, h2 {
+            font-weight: 500;
+        }
+
+        /* Buttons: Poppins 300 */
+        .option-button,
+        #setCustomTimeButton,
+        #startButton,
+        #pauseButton,
+        #resetButton {
+            font-weight: 300;
+        }
+
+        /* Custom styles for the timer display to ensure large font size and fixed alignment */
+        .timer-display {
+            font-family: 'Poppins', sans-serif; /* Explicitly set Poppins for clarity, though inherited from body */
+            font-size: 10rem; /* Very large font size */
+            line-height: 1;
+            font-weight: 700; /* Keeping timer display bold for readability */
+            text-shadow: 0 0 20px rgba(0,0,0,0.5);
+            /* Added for alignment fix */
+            display: block; /* Ensures it takes up full width for margin auto to center */
+            width: fit-content; /* Adjusts width to content */
+            min-width: 400px; /* Ensures enough space for "99:59" at 10rem font size */
+            text-align: center; /* Centers the text within its own block */
+            margin: 0 auto; /* Centers the block itself */
+        }
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 768px) {
+            .timer-display {
+                font-size: 6rem;
+                min-width: 250px; /* Adjusted min-width for smaller font size */
+            }
+            .option-button {
+                padding: 0.75rem 1.25rem;
+                font-size: 0.9rem;
+            }
+            .custom-input-group input {
+                padding: 0.75rem;
+                font-size: 0.9rem;
+            }
+            .custom-input-group button {
+                padding: 0.75rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Style for the countdown screen to apply the gradient and animation */
+        #countdownScreen {
+            background: #D493FC;
+            background: linear-gradient(45deg, rgba(212, 147, 252, 1) 0%, rgba(66, 176, 253, 1) 11%, rgba(13, 75, 185, 1) 66%, rgba(2, 30, 90, 1) 100%);
+            background-size: 200% 200%; /* Make background larger than viewport */
+            animation: gradientMovement 15s ease infinite alternate; /* Apply animation */
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen relative">
+
+    <!-- Menu Button (Top Right) -->
+    <button id="menuButton" class="absolute top-4 right-4 p-3 bg-gray-700 hover:bg-gray-600 text-white rounded-full shadow-lg transition-all duration-300 z-50">
+        <i class="fas fa-bars text-xl"></i>
+    </button>
+
+    <!-- Controls Menu Overlay -->
+    <div id="controlsMenu" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-40 hidden">
+        <div class="bg-gray-800 p-8 rounded-lg shadow-2xl text-center relative max-w-md w-full mx-4">
+            <button id="closeMenuButton" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">&times;</button>
+            <h2 class="text-3xl font-bold mb-6 text-white">Timer Controls</h2>
+            <div class="space-y-4">
+                <button id="startButton" class="w-full py-3 px-6 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-md transition-all duration-300 text-lg">
+                    <i class="fas fa-play mr-2"></i> Start
+                </button>
+                <button id="pauseButton" class="w-full py-3 px-6 bg-yellow-600 hover:bg-yellow-700 text-white font-bold rounded-lg shadow-md transition-all duration-300 text-lg">
+                    <i class="fas fa-pause mr-2"></i> Pause
+                </button>
+                <button id="resetButton" class="w-full py-3 px-6 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-md transition-all duration-300 text-lg">
+                    <i class="fas fa-redo-alt mr-2"></i> Reset
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Initial Options Screen -->
+    <div id="optionsScreen" class="flex flex-col items-center justify-center space-y-8 p-4 w-full max-w-4xl">
+        <!-- Image updated: shadow removed, size reduced by ~25% -->
+        <img src="https://i.ibb.co/SwKfRCqx/Salesforce-Logo-Outline.png" alt="Salesforce UK AI Centre Logo" class="mb-6 max-w-64 sm:max-w-72 md:max-w-80 lg:max-w-96 h-auto rounded-lg">
+
+        <h1 class="text-5xl text-white mb-6 text-center">Set Timer Length</h1>
+
+        <!-- Default Time Options -->
+        <div class="flex flex-wrap justify-center gap-4">
+            <button class="option-button bg-blue-600 hover:bg-purple-700 text-white py-3 px-6 rounded-lg shadow-md transition-all duration-300 text-xl" data-minutes="3">3 Mins</button>
+            <button class="option-button bg-blue-600 hover:bg-purple-700 text-white py-3 px-6 rounded-lg shadow-md transition-all duration-300 text-xl" data-minutes="5">5 Mins</button>
+            <button class="option-button bg-blue-600 hover:bg-purple-700 text-white py-3 px-6 rounded-lg shadow-md transition-all duration-300 text-xl" data-minutes="10">10 Mins</button>
+            <button class="option-button bg-blue-600 hover:bg-purple-700 text-white py-3 px-6 rounded-lg shadow-md transition-all duration-300 text-xl" data-minutes="20">20 Mins</button>
+            <button class="option-button bg-blue-600 hover:bg-purple-700 text-white py-3 px-6 rounded-lg shadow-md transition-all duration-300 text-xl" data-minutes="30">30 Mins</button>
+        </div>
+
+        <div class="text-2xl font-bold text-white-200 my-3">- OR -</div>
+
+        <!-- Custom Time Input -->
+        <div class="custom-input-group flex items-center bg-gray-700 rounded-lg shadow-md overflow-hidden">
+            <input type="number" id="customMinutesInput" placeholder="Custom Minutes" class="p-4 bg-gray-700 text-white text-xl outline-none w-48 text-center rounded-l-lg" min="1">
+            <button id="setCustomTimeButton" class="py-4 px-6 bg-purple-600 hover:bg-purple-700 text-white text-xl rounded-r-lg transition-all duration-300">Set Time</button>
+        </div>
+
+        <!-- Message Box for user feedback -->
+        <div id="messageBox" class="bg-red-700 text-white p-3 rounded-lg mt-4 hidden"></div>
+    </div>
+
+    <!-- Countdown Display Screen (Initially Hidden) -->
+    <div id="countdownScreen" class="absolute inset-0 flex items-center justify-center hidden">
+        <div id="timerDisplay" class="timer-display text-white">00:00</div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const optionsScreen = document.getElementById('optionsScreen');
+        const countdownScreen = document.getElementById('countdownScreen');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const customMinutesInput = document.getElementById('customMinutesInput');
+        const setCustomTimeButton = document.getElementById('setCustomTimeButton');
+        const optionButtons = document.querySelectorAll('.option-button');
+        const menuButton = document.getElementById('menuButton');
+        const controlsMenu = document.getElementById('controlsMenu');
+        const closeMenuButton = document.getElementById('closeMenuButton');
+        const startButton = document.getElementById('startButton');
+        const pauseButton = document.getElementById('pauseButton');
+        const resetButton = document.getElementById('resetButton');
+        const messageBox = document.getElementById('messageBox');
+
+        // Timer Variables
+        let totalTime = 0; // In seconds
+        let remainingTime = 0; // In seconds
+        let timerInterval = null;
+        let isPaused = false;
+        let isTimerRunning = false;
+
+        /**
+         * Displays a message to the user in a dedicated message box.
+         * @param {string} message - The message to display.
+         * @param {string} type - 'success', 'error', or 'info' to determine styling.
+         */
+        function showMessage(message, type = 'error') {
+            messageBox.textContent = message;
+            messageBox.classList.remove('hidden', 'bg-red-700', 'bg-green-700', 'bg-blue-700');
+            if (type === 'error') {
+                messageBox.classList.add('bg-red-700');
+            } else if (type === 'success') {
+                messageBox.classList.add('bg-green-700');
+            } else { // 'info' or default
+                messageBox.classList.add('bg-blue-700');
+            }
+            messageBox.classList.remove('hidden'); // Ensure it's visible
+            setTimeout(() => {
+                messageBox.classList.add('hidden');
+            }, 5000); // Hide after 5 seconds for tips
+        }
+
+        /**
+         * Formats seconds into MM:SS string.
+         * @param {number} seconds - The total seconds.
+         * @returns {string} Formatted time string (e.g., "05:30").
+         */
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        /**
+         * Updates the timer display on the screen.
+         */
+        function updateDisplay() {
+            timerDisplay.textContent = formatTime(remainingTime);
+        }
+
+        /**
+         * Starts or resumes the countdown timer.
+         */
+        function startTimer() {
+            if (totalTime <= 0) {
+                showMessage("Please set a timer duration first!");
+                return;
+            }
+
+            if (isTimerRunning && !isPaused) {
+                return; // Timer is already running
+            }
+
+            // If starting for the first time or resuming from pause
+            if (!isTimerRunning) {
+                remainingTime = totalTime; // Set remaining time to total time only on initial start
+            }
+
+            isTimerRunning = true;
+            isPaused = false;
+
+            // Hide options and show countdown screen
+            optionsScreen.classList.add('hidden');
+            countdownScreen.classList.remove('hidden');
+            menuButton.classList.remove('hidden'); // Ensure menu button is visible
+
+            // Close menu if open
+            controlsMenu.classList.add('hidden');
+
+            updateDisplay(); // Initial display update
+
+            timerInterval = setInterval(() => {
+                if (remainingTime > 0) {
+                    remainingTime--;
+                    updateDisplay();
+                } else {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    isTimerRunning = false;
+                    isPaused = false;
+                    // TODO: Play sound here when implemented by user
+                    showMessage("Time's up!", 'success');
+                    // Optionally, reset or show options after time up
+                    // resetTimer();
+                }
+            }, 1000);
+        }
+
+        /**
+         * Pauses the countdown timer.
+         */
+        function pauseTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                isPaused = true;
+                showMessage("Timer paused.");
+            }
+        }
+
+        /**
+         * Resets the countdown timer to its initial state.
+         */
+        function resetTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            totalTime = 0; // Reset total time
+            remainingTime = 0;
+            isPaused = false;
+            isTimerRunning = false;
+
+            updateDisplay(); // Update display to 00:00
+
+            // Show options screen and hide countdown screen
+            optionsScreen.classList.remove('hidden');
+            countdownScreen.classList.add('hidden');
+            menuButton.classList.remove('hidden'); // Ensure menu button is visible
+
+            // Close menu if open
+            controlsMenu.classList.add('hidden');
+            showMessage("Timer reset.");
+        }
+
+        /**
+         * Sets the total time for the timer.
+         * @param {number} minutes - The number of minutes to set.
+         */
+        function setTime(minutes) {
+            totalTime = minutes * 60;
+            remainingTime = totalTime;
+            updateDisplay();
+            showMessage(`Timer set to ${minutes} minutes.`, 'success');
+            // Automatically start the timer after setting from options
+            startTimer();
+        }
+
+        // Event Listeners
+
+        // Default time buttons
+        optionButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const minutes = parseInt(button.dataset.minutes);
+                setTime(minutes);
+            });
+        });
+
+        // Custom time input
+        setCustomTimeButton.addEventListener('click', () => {
+            const minutes = parseInt(customMinutesInput.value);
+            if (isNaN(minutes) || minutes <= 0) {
+                showMessage("Please enter a valid number of minutes (greater than 0).");
+                return;
+            }
+            setTime(minutes);
+            customMinutesInput.value = ''; // Clear input after setting
+        });
+
+        // Menu button to open controls
+        menuButton.addEventListener('click', () => {
+            controlsMenu.classList.remove('hidden');
+        });
+
+        // Close menu button
+        closeMenuButton.addEventListener('click', () => {
+            controlsMenu.classList.add('hidden');
+        });
+
+        // Control buttons inside the menu
+        startButton.addEventListener('click', startTimer);
+        pauseButton.addEventListener('click', pauseTimer);
+        resetButton.addEventListener('click', resetTimer);
+
+        // Initial display update
+        updateDisplay();
+    </script>
+</body>
+</html>
