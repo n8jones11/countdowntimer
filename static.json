@@ -1,7 +1,8 @@
 {
   "root": ".",
-  "clean_urls": false,
+  "clean_urls": true,
   "routes": {
     "/**": "index.html"
-  }
+  },
+  "directory_index": "index.html"
 }
